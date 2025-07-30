@@ -24,6 +24,8 @@ urlpatterns = [
 
     path('history/', TemplateView.as_view(template_name='pages/videos/history.html'), name='history'),
 
+    path('popular/', TemplateView.as_view(template_name='pages/videos/popular.html'), name='popular-videos'),
+
     path('upload-video', TemplateView.as_view(template_name='pages/videos/upload.html'), name='upload-video'),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),

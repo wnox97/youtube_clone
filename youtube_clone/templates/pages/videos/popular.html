@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Main content -->
+<div class="flex-grow-1 p-4">
+  <h1>Popular Videos</h1>
+  <div class="row" id="video-container">
+    <p>Loading...</p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await fetch('/api/videos/popular/');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const videos = await response.json();
+      const container = document.getElementById('video-container');
+
+      container.innerHTML = '';
+
+      if (videos.length === 0) {
+        container.innerHTML = '<p>No popular videos found at the moment.</p>';
+        return;
+      }
+
+      videos.forEach(video => {
+        // 2. CAMBIO: La estructura de datos es más simple. Accedemos a 'video' directamente.
+        const uploaderName = video.uploader ? (video.uploader.name || video.uploader.email) : 'Unknown';
+        const detailUrl = `/videos/${video.id}/`;
+        const videoCardHTML = `
+              <div class="col-md-4 mb-4">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="ratio ratio-16x9">
+                      <iframe width="560" height="315" src="${video.embed_url}" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <h5 class="card-title py-2">${video.title}</h5>
+                    <p class="card-text">
+                      <strong>Posted by:</strong> ${uploaderName}<br>
+                      <strong>Date:</strong> ${new Date(video.upload_date).toLocaleDateString()}
+                    </p>
+                    <a href="${detailUrl}" class="btn btn-primary">View Details</a>
+                  </div>
+                </div>
+              </div>
+            `;
+        container.innerHTML += videoCardHTML;
+      });
+
+    } catch (error) {
+      console.error('Failed to fetch popular videos:', error);
+      document.getElementById('video-container').innerHTML = '<p>Could not load videos. Please try again later.</p>';
+    }
+  });
+</script>
+
+{% endblock content %}

@@ -16,3 +16,11 @@ class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = ["id", "title", "embed_url", "uploader", "upload_date"]
+
+
+class VideoPopularSerializer(VideoSerializer):
+    popularity_score = serializers.IntegerField()
+
+    class Meta:
+        model = Video
+        fields = VideoSerializer.Meta.fields + ["popularity_score"]

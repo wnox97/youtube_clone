@@ -7,7 +7,8 @@ from youtube_clone.videos.api_views import (
     CommentListCreateAPIView,
     VideoListCreateAPIView,
     VideoRetrieveUpdateDestroyAPIView,
-    HistoryViewSet
+    HistoryViewSet,
+    PopularVideosViewSet
 )
 
 app_name = "videos"
@@ -20,6 +21,8 @@ router.register(
 router.register("api/video-interactions", VideoInteractionViewSet, basename="like-dislike")
 
 router.register("api/videos/history", HistoryViewSet, basename="history")
+
+router.register('api/videos/popular', PopularVideosViewSet, basename='popular-videos')
 
 
 urlpatterns = [
