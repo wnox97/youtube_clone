@@ -1,3 +1,27 @@
 {% extends "base.html" %}
 
+{% block content %}
+  <!-- Main content -->
+  <div class="flex-grow-1 p-4">
+    <h1>Videos</h1>
+    <div class="row">
+      {% for video in videos %}
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <iframe src="{{ video.embed_url }}" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <h5 class="card-title py-2">{{ video.title }}</h5>
+            <p class="card-text">
+              <strong>Posted by:</strong> {{ video.username }}<br>
+              <strong>Date:</strong> {{ video.date_post|date:"F j, Y" }}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 
+  {% endblock content %}

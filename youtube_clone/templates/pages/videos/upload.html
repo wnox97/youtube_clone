@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="vh-100">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col">
+        <div class="card" style="border-radius: 1rem;">
+          <div class="card-body p-4 p-lg-5 text-black">
+
+            <form id="upload-form">
+              {% csrf_token %}
+              <div class="d-flex align-items-center mb-3 pb-1">
+                <i class="fas fa-video fa-2x me-3" style="color: #ff6219;"></i>
+                <span class="h1 fw-bold mb-0">Upload Video</span>
+              </div>
+
+              <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Share your video with the world</h5>
+
+              <!-- Campo para el Título del Video -->
+              <div data-mdb-input-init class="form-outline mb-4">
+                <input type="text" id="title" class="form-control form-control-lg" required />
+                <label class="form-label" for="title">Video Title</label>
+              </div>
+
+              <!-- Campo para el Enlace de Embed de YouTube -->
+              <div data-mdb-input-init class="form-outline mb-4">
+                <input type="url" id="youtube-embed-link" class="form-control form-control-lg" required
+                  placeholder="https://www.youtube.com/embed/VIDEO_ID" />
+                <label class="form-label" for="youtube-embed-link">YouTube Embed Link</label>
+              </div>
+
+              <div class="pt-1 mb-4">
+                <button data-mdb-button-init data-mdb-ripple-init class="btn btn-dark btn-lg btn-block"
+                  type="submit">Upload</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('upload-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    // 1. Obtener los datos del formulario
+    const title = document.getElementById('title').value;
+    const youtubeEmbedLink = document.getElementById('youtube-embed-link').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // 2. Obtener el token de acceso del usuario para autenticar la solicitud
+    const accessToken = localStorage.getItem('accessToken');
+
+    // Si no hay token, el usuario no está autenticado. Redirigir al login.
+    if (!accessToken) {
+      alert('You must be logged in to upload a video.');
+      window.location.href = '/sign-in';
+      return;
+    }
+
+    const data = {
+      title: title,
+      youtube_embed_link: youtubeEmbedLink
+    };
+
+    try {
+      // 3. Enviar la solicitud POST a la API de creación de videos
+      const response = await fetch('/api/videos/', { // Asegúrate que esta es tu URL de API para crear videos
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'Authorization': `Bearer ${accessToken}` // ¡Muy importante para saber quién sube el video!
+        },
+        body: JSON.stringify(data)
+      });
+
+      // 4. Manejar la respuesta de la API
+      if (response.ok) { // response.ok es true para estados 200-299
+        const newVideo = await response.json();
+        alert('Video uploaded successfully!');
+        // Redirigir a la página de inicio para ver el nuevo video
+        window.location.href = '/';
+      } else {
+        const error = await response.json();
+        // Mostrar un mensaje de error más detallado
+        let errorMessage = 'Upload failed. Please check the fields and try again.';
+        if (error.youtube_embed_link) {
+          errorMessage = `Upload failed: ${error.youtube_embed_link[0]}`;
+        } else if (error.detail) {
+          errorMessage = `Upload failed: ${error.detail}`;
+        }
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error('An error occurred during the request:', error);
+      alert('An unexpected error occurred. Please try again later.');
+    }
+  });
+</script>
+{% endblock %}
