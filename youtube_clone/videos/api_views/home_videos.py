@@ -7,7 +7,7 @@ def home_view(request):
     videos = [
         {
             "title": "Video 1",
-            "embed_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            "embed_url": "https://www.youtube.com/embed/R-pNoy2GgPQ?si=2l_R3LL7sXiOMMrQ",
             "username": "user1",
             "date_post": datetime(2023, 10, 1),
         },

@@ -11,21 +11,23 @@ from rest_framework.authtoken.views import obtain_auth_token
 from youtube_clone.videos.api_views.home_videos import home_view
 
 urlpatterns = [
-    path("", home_view, name="home"),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),
         name="about",
     ),
+    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path("sign-in/", TemplateView.as_view(template_name="pages/auth/sign-in.html"), name="sign-in"),
     path("sign-up/", TemplateView.as_view(template_name="pages/auth/sign-up.html"), name="sign-up"),
+
+    path('videos/<int:pk>/', TemplateView.as_view(template_name='pages/videos/detail.html'), name='video-detail'),
     path('upload-video', TemplateView.as_view(template_name='pages/videos/upload.html'), name='upload-video'),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("youtube_clone.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    path("videos/", include("youtube_clone.videos.urls", namespace="videos")),
+    path("", include("youtube_clone.videos.urls", namespace="videos")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

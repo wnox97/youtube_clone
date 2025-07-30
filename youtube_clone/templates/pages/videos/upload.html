@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="vh-100">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
+<section class="vh-100 w-100">
+  <div class="container h-100">
+    <div class="row d-flex justify-content-center h-100 py-5 px-5">
       <div class="col">
         <div class="card" style="border-radius: 1rem;">
           <div class="card-body p-4 p-lg-5 text-black">
@@ -47,47 +47,45 @@
   document.getElementById('upload-form').addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    // 1. Obtener los datos del formulario
     const title = document.getElementById('title').value;
-    const youtubeEmbedLink = document.getElementById('youtube-embed-link').value;
+    let youtubeEmbedLink = document.getElementById('youtube-embed-link').value;
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // 2. Obtener el token de acceso del usuario para autenticar la solicitud
     const accessToken = localStorage.getItem('accessToken');
 
-    // Si no hay token, el usuario no está autenticado. Redirigir al login.
     if (!accessToken) {
       alert('You must be logged in to upload a video.');
       window.location.href = '/sign-in';
       return;
     }
 
+    if(youtubeEmbedLink.includes('wathc?v=')) {
+      youtubeEmbedLink = youtubeEmbedLink.replace('watch?v=', 'embed/');
+    }
+
+
+
     const data = {
-      title: title,
-      youtube_embed_link: youtubeEmbedLink
+      title,
+      embed_url: youtubeEmbedLink
     };
 
     try {
-      // 3. Enviar la solicitud POST a la API de creación de videos
-      const response = await fetch('/api/videos/', { // Asegúrate que esta es tu URL de API para crear videos
+      const response = await fetch('/api/videos/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': csrfToken,
-          'Authorization': `Bearer ${accessToken}` // ¡Muy importante para saber quién sube el video!
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify(data)
       });
-
-      // 4. Manejar la respuesta de la API
-      if (response.ok) { // response.ok es true para estados 200-299
+      if (response.ok) {
         const newVideo = await response.json();
         alert('Video uploaded successfully!');
-        // Redirigir a la página de inicio para ver el nuevo video
         window.location.href = '/';
       } else {
         const error = await response.json();
-        // Mostrar un mensaje de error más detallado
         let errorMessage = 'Upload failed. Please check the fields and try again.';
         if (error.youtube_embed_link) {
           errorMessage = `Upload failed: ${error.youtube_embed_link[0]}`;

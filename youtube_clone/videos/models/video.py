@@ -6,7 +6,7 @@ User = get_user_model()
 
 class Video(models.Model):
     title = models.CharField(max_length=255)
-    youtube_embed_link = models.URLField(
+    embed_url = models.URLField(
         help_text="Pega aquí el enlace de embed de YouTube (ej. https://www.youtube.com/embed/VIDEO_ID)"
     )
     upload_date = models.DateTimeField(auto_now_add=True)

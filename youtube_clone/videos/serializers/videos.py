@@ -1,8 +1,18 @@
 from rest_framework import serializers
 from youtube_clone.videos.models import Video
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UploaderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "email", "name", "username","last_name"]
 
 
 class VideoSerializer(serializers.ModelSerializer):
+    uploader = UploaderSerializer(read_only=True)
+
     class Meta:
         model = Video
-        fields = ["id", "title", "embed_url", "user", "date_post"]
+        fields = ["id", "title", "embed_url", "uploader", "upload_date"]

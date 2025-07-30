@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+
+      <!-- 1. Contenedor del Video -->
+      <div class="ratio ratio-16x9 mb-3">
+        <iframe id="video-player" src="" title="Video Player" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+        </iframe>
+      </div>
+
+      <!-- 2. Título del Video -->
+      <h1 class="h4 mb-3" id="video-title">Cargando título...</h1>
+
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+          <div>
+            <h6 id="uploader-name" class="mb-0">Cargando...</h6>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Botones de Acción: Like/Dislike -->
+      <div class="d-flex align-items-center mb-3">
+        <!-- Botón de Like -->
+        <button type="button" class="btn btn-light border me-2" id="like-btn">
+          <i class="fas fa-thumbs-up"></i>
+          <span class="ms-2" id="like-count">15K</span>
+        </button>
+
+        <!-- Botón de Dislike -->
+        <button type="button" class="btn btn-light border" id="dislike-btn">
+          <i class="fas fa-thumbs-down"></i>
+          <span class="ms-2" id="like-count">15K</span>
+        </button>
+      </div>
+
+      <!-- 5. Descripción del Video -->
+      <div class="bg-light p-3 rounded mb-4">
+        <p class="fw-bold"><span id="view-count">0</span> vistas &nbsp;&nbsp; <span id="upload-date"></span></p>
+        <p id="video-description">Cargando descripción...</p>
+      </div>
+
+      <!-- 6. Sección de Comentarios -->
+      <hr>
+      <h4 class="mb-3">Comentarios (<span id="comment-count">0</span>)</h4>
+      <!-- 7. Formulario para Nuevo Comentario -->
+      <div class="d-flex align-items-start mb-4">
+        <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Tu avatar">
+        <div class="w-100">
+          <form>
+            <textarea class="form-control" rows="2" placeholder="Añadir un comentario..."></textarea>
+            <div class="d-flex justify-content-end mt-2">
+              <button type="button" class="btn btn-secondary btn-sm me-2">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 8. Lista de Comentarios Existentes -->
+      <div id="comments-list">
+        <p>Cargando comentarios...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const path = window.location.pathname;
+    const pathSegments = path.split('/');
+    const videoId = pathSegments[2];
+
+    if (!videoId) {
+      console.error("No se pudo encontrar el ID del video en la URL.");
+      document.getElementById('video-title').textContent = 'URL de video no válida.';
+      return;
+    }
+
+    try {
+      // Llamamos a nuestra API para obtener los datos del video
+      const response = await fetch(`/api/videos/${videoId}/`);
+      if (!response.ok) {
+        document.body.innerHTML = '<h1>Video no encontrado</h1>';
+        return;
+      }
+      const videoData = await response.json();
+      console.log(videoData)
+
+      document.getElementById('video-player').src = videoData.embed_url;
+      document.getElementById('video-title').textContent = videoData.title;
+
+      if (videoData.uploader) {
+        document.getElementById('uploader-name').textContent = videoData.uploader.name || videoData.uploader.email;
+      }
+
+      // 3. Descripción y fecha
+      document.getElementById('video-description').textContent = "Esta es una descripción de ejemplo. Añade un campo de descripción a tu modelo Video.";
+      const uploadDate = new Date(videoData.upload_date);
+      document.getElementById('upload-date').textContent = uploadDate;
+
+      // 4. Comentarios (esto requerirá otra llamada a API o incluirlos en el serializador de video)
+      document.getElementById('comments-list').innerHTML = '<p>La sección de comentarios se implementará a continuación.</p>';
+
+    } catch (error) {
+      console.error('Error al cargar los datos del video:', error);
+      document.getElementById('video-title').textContent = 'Error al cargar el video.';
+    }
+  });
+</script>
+
+
+{% endblock %}

@@ -20,13 +20,63 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
     integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Your stuff: Third-party CSS libraries go here -->
-  <!-- This file stores project-specific CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 
 
   {% compress css %}
   <link href="{% static 'css/project.css' %}" rel="stylesheet" />
   {% endcompress %}
+
+  <style>
+    body {
+      /* Añadimos un padding-top al body igual a la altura del navbar.
+               Esto empuja todo el contenido hacia abajo, evitando que el navbar lo solape. */
+      padding-top: 56px;
+      overflow-x: hidden;
+    }
+
+    #sidebar {
+      position: fixed;
+      /* En lugar de top: 0, lo alineamos con el nuevo top del body (después del padding) */
+      top: 56px;
+      left: 0;
+      width: 280px;
+      /* La altura ahora es el 100% de la ventana MENOS la altura del navbar */
+      height: calc(100vh - 56px);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    #main-content {
+      margin-left: 280px;
+      padding: 20px;
+    }
+
+    /* La media query para móviles no necesita cambios, ya que el sidebar
+             vuelve a su posición relativa y el padding-top del body sigue funcionando. */
+    @media (max-width: 768px) {
+      body {
+        /* En móvil, el padding-top puede no ser necesario si el navbar es estático */
+        padding-top: 56px;
+        /* O ajustarlo según el comportamiento del navbar móvil */
+      }
+
+      #sidebar {
+        position: relative;
+        top: auto;
+        /* Reseteamos el top */
+        width: 100%;
+        height: auto;
+      }
+
+      #main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
 
 
   {% endblock css %}
@@ -148,7 +198,7 @@
 
 <body class="{% block bodyclass %}{% endblock bodyclass %}">
   {% block body %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">YouTube Clone</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -171,54 +221,59 @@
     </div>
   </nav>
 
-<div class="d-flex flex-row">
-  <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px; height: 100vh;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-      <svg class="bi me-2" width="40" height="32">
-        <use xlink:href="#bootstrap"></use>
-      </svg>
-      <span class="fs-4" id="user-email">loading...</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item">
-        <a href="/" class="nav-link active" aria-current="page">
-          <svg class="bi me-2" width="16" height="16">
-            <use xlink:href="/"></use>
-          </svg>
-          Home
-        </a>
-      </li>
-      <li>
-        <a href="/upload-video" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16">
-            <use xlink:href="#speedometer2"></use>
-          </svg>
-          Upload video
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16">
-            <use xlink:href="#table"></use>
-          </svg>
-          History
-        </a>
-      </li>
-      <li>
-        <a href="#" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16">
-            <use xlink:href="#grid"></use>
-          </svg>
-          Popular
-        </a>
-      </li>
-    </ul>
-    <hr>
+  <div class="page-container">
+    <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark"
+      style="width: 280px; height: 100vh;">
+      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <svg class="bi me-2" width="40" height="32">
+          <use xlink:href="#bootstrap"></use>
+        </svg>
+        <span class="fs-4" id="user-email">loading...</span>
+      </a>
+      <hr>
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/" class="nav-link active" aria-current="page">
+            <svg class="bi me-2" width="16" height="16">
+              <use xlink:href="/"></use>
+            </svg>
+            Home
+          </a>
+        </li>
+        <li>
+          <a href="/upload-video" class="nav-link text-white">
+            <svg class="bi me-2" width="16" height="16">
+              <use xlink:href="#speedometer2"></use>
+            </svg>
+            Upload video
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link text-white">
+            <svg class="bi me-2" width="16" height="16">
+              <use xlink:href="#table"></use>
+            </svg>
+            History
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link text-white">
+            <svg class="bi me-2" width="16" height="16">
+              <use xlink:href="#grid"></use>
+            </svg>
+            Popular
+          </a>
+        </li>
+      </ul>
+      <hr>
+    </div>
+
+    <div id="main-content">
+      {% block content %}
+      {% endblock content %}
+    </div>
   </div>
 
-    {% block content %}
-    {% endblock content %}
 
   {% endblock body %}
 </body>
