@@ -4,6 +4,7 @@
   <!-- Main content -->
   <div class="flex-grow-1 p-4">
     <h1>Videos</h1>
+    {% csrf_token %}
     <div class="row" id="video-container">
       <p>Loading...</p>
     </div>
@@ -40,7 +41,7 @@
                       <strong>Posted by:</strong> ${uploaderName}<br>
                       <strong>Date:</strong> ${new Date(video.upload_date).toLocaleDateString()}
                     </p>
-                    <a href="${detailUrl}" class="btn btn-primary">View Details</a>
+                    <a href="${detailUrl}" class="btn btn-primary view-details-btn" id="button-detail-${video.id}" data-video-id="${video.id}">View Details</a>
                   </div>
                 </div>
               </div>
@@ -54,6 +55,42 @@
         document.getElementById('video-container').innerHTML = '<p>Could not load videos. Please try again later.</p>';
       }
     });
+  </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const videoGrid = document.getElementById('video-container');
+
+    videoGrid.addEventListener('click', async (event) => {
+      const clickedButton = event.target.closest('.view-details-btn');
+
+      if (clickedButton) {
+        event.preventDefault();
+
+        const videoId = clickedButton.dataset.videoId;
+        const accessToken = localStorage.getItem('accessToken');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        if (accessToken && videoId) {
+          try {
+            await fetch('/api/videos/history/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+                'X-CSRFToken': csrfToken
+              },
+              body: JSON.stringify({ video_id: videoId })
+            });
+          } catch (error) {
+            console.error('No se pudo registrar el video en el historial:', error);
+          }
+        }
+        window.location.href = clickedButton.href;
+      }
+    });
+
+  });
   </script>
 
   {% endblock content %}

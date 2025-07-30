@@ -1,9 +1,14 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .api_views.videos import VideoListCreateAPIView, VideoRetrieveUpdateDestroyAPIView, RandomVideoViewSet
-from .api_views.home_videos import home_view
-
+from youtube_clone.videos.api_views import (
+    VideoInteractionViewSet,
+    RandomVideoViewSet,
+    CommentListCreateAPIView,
+    VideoListCreateAPIView,
+    VideoRetrieveUpdateDestroyAPIView,
+    HistoryViewSet
+)
 
 app_name = "videos"
 router = DefaultRouter()
@@ -11,6 +16,11 @@ router = DefaultRouter()
 router.register(
     r"api/videos/random", RandomVideoViewSet , basename="random-videos"
 )
+
+router.register("api/video-interactions", VideoInteractionViewSet, basename="like-dislike")
+
+router.register("api/videos/history", HistoryViewSet, basename="history")
+
 
 urlpatterns = [
 
@@ -22,6 +32,8 @@ urlpatterns = [
         VideoRetrieveUpdateDestroyAPIView.as_view(),
         name="video-detail",
     ),
+
+    path('api/videos/<int:pk>/comments/', CommentListCreateAPIView.as_view(), name='comment-list-create'),
 ]
 
 urlpatterns += router.urls

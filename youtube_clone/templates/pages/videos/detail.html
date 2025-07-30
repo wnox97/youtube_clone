@@ -29,31 +29,29 @@
         <!-- Botón de Like -->
         <button type="button" class="btn btn-light border me-2" id="like-btn">
           <i class="fas fa-thumbs-up"></i>
-          <span class="ms-2" id="like-count">15K</span>
+          <span class="ms-2" id="like-count">0</span>
         </button>
 
         <!-- Botón de Dislike -->
         <button type="button" class="btn btn-light border" id="dislike-btn">
           <i class="fas fa-thumbs-down"></i>
-          <span class="ms-2" id="like-count">15K</span>
+          <span class="ms-2" id="dislike-count">0</span>
         </button>
       </div>
 
-      <!-- 5. Descripción del Video -->
       <div class="bg-light p-3 rounded mb-4">
         <p class="fw-bold"><span id="view-count">0</span> vistas &nbsp;&nbsp; <span id="upload-date"></span></p>
         <p id="video-description">Cargando descripción...</p>
       </div>
 
-      <!-- 6. Sección de Comentarios -->
       <hr>
       <h4 class="mb-3">Comentarios (<span id="comment-count">0</span>)</h4>
-      <!-- 7. Formulario para Nuevo Comentario -->
+
       <div class="d-flex align-items-start mb-4">
-        <img src="https://via.placeholder.com/40" class="rounded-circle me-3" alt="Tu avatar">
         <div class="w-100">
-          <form>
-            <textarea class="form-control" rows="2" placeholder="Añadir un comentario..."></textarea>
+          <form id="comment-form">
+            {% csrf_token %}
+            <textarea id="comment-text" class="form-control" rows="2" placeholder="Añadir un comentario..."></textarea>
             <div class="d-flex justify-content-end mt-2">
               <button type="button" class="btn btn-secondary btn-sm me-2">Cancelar</button>
               <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
@@ -62,9 +60,8 @@
         </div>
       </div>
 
-      <!-- 8. Lista de Comentarios Existentes -->
       <div id="comments-list">
-        <p>Cargando comentarios...</p>
+        <p id="placeholder-comments">Cargando comentarios...</p>
       </div>
 
     </div>
@@ -76,6 +73,7 @@
     const path = window.location.pathname;
     const pathSegments = path.split('/');
     const videoId = pathSegments[2];
+    const accessToken = localStorage.getItem('accessToken');
 
     if (!videoId) {
       console.error("No se pudo encontrar el ID del video en la URL.");
@@ -84,14 +82,32 @@
     }
 
     try {
-      // Llamamos a nuestra API para obtener los datos del video
       const response = await fetch(`/api/videos/${videoId}/`);
+      const responseComment = await fetch(`/api/videos/${videoId}/comments/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!responseComment.ok) {
+        console.error('Error al cargar los comentarios:', responseComment.statusText);
+        document.getElementById('comments-list').innerHTML = '<p>Error al cargar los comentarios.</p>';
+        return;
+      }
+
       if (!response.ok) {
         document.body.innerHTML = '<h1>Video no encontrado</h1>';
         return;
       }
       const videoData = await response.json();
-      console.log(videoData)
+      const commentsData = await responseComment.json();
+
+       const commentsContainer = document.getElementById('comments-list');
+       commentsContainer.innerHTML = '';
+       const commentsCount = document.getElementById('comment-count');
+      commentsCount.textContent = commentsData.length;
 
       document.getElementById('video-player').src = videoData.embed_url;
       document.getElementById('video-title').textContent = videoData.title;
@@ -100,13 +116,30 @@
         document.getElementById('uploader-name').textContent = videoData.uploader.name || videoData.uploader.email;
       }
 
-      // 3. Descripción y fecha
       document.getElementById('video-description').textContent = "Esta es una descripción de ejemplo. Añade un campo de descripción a tu modelo Video.";
       const uploadDate = new Date(videoData.upload_date);
       document.getElementById('upload-date').textContent = uploadDate;
 
-      // 4. Comentarios (esto requerirá otra llamada a API o incluirlos en el serializador de video)
-      document.getElementById('comments-list').innerHTML = '<p>La sección de comentarios se implementará a continuación.</p>';
+      if (commentsData.length === 0) {
+        commentsContainer.innerHTML = '<p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>';
+        return;
+      }
+
+      commentsData.forEach(comment => {
+        const userName = comment.user ? (comment.user.name || comment.user.email) : 'Anónimo';
+        const commentDate = new Date(comment.created_at).toLocaleDateString();
+
+        const commentHTML = `
+        <div class="d-flex align-items-start mb-3">
+          <div>
+            <h6 class="mb-0">${userName} <small class="text-muted ms-2">${commentDate}</small></h6>
+            <p class="mb-1">${comment.text}</p>
+          </div>
+        </div>
+      `;
+        commentsContainer.innerHTML += commentHTML;
+      });
+
 
     } catch (error) {
       console.error('Error al cargar los datos del video:', error);
@@ -115,5 +148,116 @@
   });
 </script>
 
+<script>
+  const commentForm = document.getElementById('comment-form');
 
+  commentForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const videoId = window.location.pathname.split('/')[2];
+    const commentText = document.getElementById('comment-text').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const accessToken = localStorage.getItem('accessToken');
+
+    if (!accessToken) {
+      alert('Debes iniciar sesión para poder comentar.');
+      window.location.href = '/sign-in';
+      return;
+    }
+
+    if (!commentText.trim()) {
+      alert('El comentario no puede estar vacío.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/videos/${videoId}/comments/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ text: commentText })
+      });
+
+      if (response.ok) {
+        document.getElementById('comment-text').value = '';
+        alert('Comentario publicado con éxito.');
+        location.reload();
+      } else {
+        const errorData = await response.json();
+        console.error('Error al publicar el comentario:', errorData);
+        alert('No se pudo publicar el comentario. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error de red:', error);
+      alert('Ocurrió un error de red. Por favor, revisa tu conexión.');
+    }
+  });
+
+</script>
+
+<script>
+  function updateLikeCounts(likes, dislikes) {
+    document.getElementById('like-count').textContent = likes;
+    document.getElementById('dislike-count').textContent = dislikes;
+  }
+
+  async function handleVote(videoId, isLike) {
+    const accessToken = localStorage.getItem('accessToken');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    if (!accessToken) {
+      alert('Debes iniciar sesión para poder votar.');
+      window.location.href = '/sign-in';
+      return;
+    }
+
+    try {
+      const voteResponse = await fetch(`/api/video-interactions/${videoId}/vote/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ is_like: isLike })
+      });
+
+      if (!voteResponse.ok) {
+        throw new Error('Failed to submit vote');
+      }
+
+      const countsResponse = await fetch(`/api/video-interactions/${videoId}/likes-dislikes/`);
+      const countsData = await countsResponse.json();
+
+      updateLikeCounts(countsData.likes, countsData.dislikes);
+
+    } catch (error) {
+      console.error('Error al procesar el voto:', error);
+      alert('Ocurrió un error al procesar tu voto.');
+    }
+  }
+document.addEventListener('DOMContentLoaded', async () => {
+  const videoId = window.location.pathname.split('/')[2];
+    try {
+      const countsResponse = await fetch(`/api/video-interactions/${videoId}/likes-dislikes/`);
+      if (countsResponse.ok) {
+        const countsData = await countsResponse.json();
+        updateLikeCounts(countsData.likes, countsData.dislikes);
+      }
+    } catch (error) {
+      console.error('Error al cargar datos iniciales:', error);
+    }
+
+    document.getElementById('like-btn').addEventListener('click', () => {
+      handleVote(videoId, true);
+    });
+
+    document.getElementById('dislike-btn').addEventListener('click', () => {
+      handleVote(videoId, false);
+    });
+  });
+</script>
 {% endblock %}

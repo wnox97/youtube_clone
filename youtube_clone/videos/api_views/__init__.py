@@ -1,2 +1,7 @@
 from .videos import VideoListCreateAPIView, VideoRetrieveUpdateDestroyAPIView, RandomVideoViewSet
-from .home_videos import home_view
+
+from .comments import CommentListCreateAPIView
+
+from .like_dislike import VideoInteractionViewSet
+
+from .history import HistoryViewSet

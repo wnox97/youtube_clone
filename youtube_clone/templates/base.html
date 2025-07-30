@@ -32,19 +32,15 @@
 
   <style>
     body {
-      /* Añadimos un padding-top al body igual a la altura del navbar.
-               Esto empuja todo el contenido hacia abajo, evitando que el navbar lo solape. */
       padding-top: 56px;
       overflow-x: hidden;
     }
 
     #sidebar {
       position: fixed;
-      /* En lugar de top: 0, lo alineamos con el nuevo top del body (después del padding) */
       top: 56px;
       left: 0;
       width: 280px;
-      /* La altura ahora es el 100% de la ventana MENOS la altura del navbar */
       height: calc(100vh - 56px);
       z-index: 1000;
       overflow-y: auto;
@@ -55,19 +51,14 @@
       padding: 20px;
     }
 
-    /* La media query para móviles no necesita cambios, ya que el sidebar
-             vuelve a su posición relativa y el padding-top del body sigue funcionando. */
     @media (max-width: 768px) {
       body {
-        /* En móvil, el padding-top puede no ser necesario si el navbar es estático */
         padding-top: 56px;
-        /* O ajustarlo según el comportamiento del navbar móvil */
       }
 
       #sidebar {
         position: relative;
         top: auto;
-        /* Reseteamos el top */
         width: 100%;
         height: auto;
       }
@@ -171,26 +162,22 @@
   </script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function () {
       const currentPath = window.location.pathname;
+
       const navLinks = document.querySelectorAll('.nav-pills .nav-link');
+
       navLinks.forEach(link => {
         const linkPath = link.getAttribute('href');
-        link.classList.remove('active');
-        link.classList.remove('text-white');
-        if (currentPath === linkPath) {
+
+        if (linkPath === currentPath) {
           link.classList.add('active');
+          link.classList.remove('text-white');
         } else {
+          link.classList.remove('active');
           link.classList.add('text-white');
         }
       });
-      if (currentPath === '/') {
-        const homeLink = document.querySelector('.nav-pills .nav-link[href="/"]');
-        if (homeLink) {
-          homeLink.classList.add('active');
-          homeLink.classList.remove('text-white');
-        }
-      }
     });
   </script>
   {% endblock javascript %}
@@ -243,15 +230,15 @@
         <li>
           <a href="/upload-video" class="nav-link text-white">
             <svg class="bi me-2" width="16" height="16">
-              <use xlink:href="#speedometer2"></use>
+              <use xlink:href="/upload-video"></use>
             </svg>
             Upload video
           </a>
         </li>
         <li>
-          <a href="#" class="nav-link text-white">
+          <a href="/history/" class="nav-link text-white">
             <svg class="bi me-2" width="16" height="16">
-              <use xlink:href="#table"></use>
+              <use xlink:href="/history"></use>
             </svg>
             History
           </a>

@@ -8,7 +8,6 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
-from youtube_clone.videos.api_views.home_videos import home_view
 
 urlpatterns = [
     path(
@@ -20,7 +19,11 @@ urlpatterns = [
     path("sign-in/", TemplateView.as_view(template_name="pages/auth/sign-in.html"), name="sign-in"),
     path("sign-up/", TemplateView.as_view(template_name="pages/auth/sign-up.html"), name="sign-up"),
 
-    path('videos/<int:pk>/', TemplateView.as_view(template_name='pages/videos/detail.html'), name='video-detail'),
+    path('videos/<int:pk>/', TemplateView.as_view(template_name='pages/videos/detail.html'),
+    name='video-detail'),
+
+    path('history/', TemplateView.as_view(template_name='pages/videos/history.html'), name='history'),
+
     path('upload-video', TemplateView.as_view(template_name='pages/videos/upload.html'), name='upload-video'),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),

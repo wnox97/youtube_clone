@@ -8,7 +8,7 @@ User = get_user_model()
 class LikeDislike(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
-    is_like = models.BooleanField()  # True para like, False para dislike
+    is_like = models.BooleanField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
